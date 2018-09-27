@@ -4,7 +4,7 @@
             [quantly.service :as service]
             [datomic.api :as d]))
 
-(defonce uri (str "datomic:mem://" (d/squuid)))
+(def uri "datomic:dev://localhost:4334/quantly")
 
 (defn run-dev
   [& args]

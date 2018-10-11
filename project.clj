@@ -1,3 +1,6 @@
+; TODO
+; make run-dev work
+; communicate with sente
 (defproject quantly "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
@@ -16,25 +19,38 @@
                  [hiccup "1.0.5"]
                  [org.clojure/clojurescript "1.10.339"
                   :scope "provided"]
-                 [com.bhauman/figwheel-main "0.1.9"]
-                 [com.bhauman/rebel-readline-cljs "0.1.4"]]
+                 ]
+
+  :plugins [[lein-cljsbuild "1.1.7"]]
 
   :min-lein-version "2.0.0"
   :resource-paths ["config" "resources" "target/cljs-out"]
   :source-paths ["src/clj" "src/cljc" "src/cljs"]
 
   :clean-targets ^{:protect false}
-  [:target-path]
+  [:target-path
+   [:cljsbuild :builds :app :compiler :output-dir]
+   [:cljsbuild :builds :app :compiler :output-to]]
 
   :aliases
   {"fig" ["trampoline" "run" "-m" "figwheel.main" "-b" "quantly" "-r"]
-   "js" ["trampoline" "run" "-m" "figwheel.main" "-O" "advanced" "-bo" "quantly"]
    "run-dev" ["trampoline" "run" "-m" "quantly.server/run-dev"]}
+
+  :cljsbuild
+  {:builds [{:source-paths ["src/cljs" "src/cljc"]
+             :compiler
+             {:output-to        "target/cljs-out/public/quantly-main.js"
+              :output-dir       "target/cljs-out/public/"
+              :source-map       "target/cljs-out/public/quantly-main.js.map"
+              :optimizations :advanced
+              :pretty-print  false}}]}
 
   :main quantly.server
 
   :profiles
-  {:uberjar {:prep-tasks ["compile" ["js"]]
+  {:dev {:dependencies [[com.bhauman/figwheel-main "0.1.9"]
+                        [com.bhauman/rebel-readline-cljs "0.1.4"]]}
+   :uberjar {:prep-tasks ["compile" ["cljsbuild" "once"]]
              :env {:production true}
              :aot :all
              :omit-source true}})

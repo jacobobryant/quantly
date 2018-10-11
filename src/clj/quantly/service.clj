@@ -65,7 +65,7 @@
                     [:head [:meta {:charset "utf-8"}]]
                     [:body
                      [:div#app "hello"]
-                     [:script {:src "cljs-out/quantly-main.js"}]
+                     [:script {:src "quantly-main.js"}]
                      [:script "quantly.core.init();"]]])})))
 
 

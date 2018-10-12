@@ -1,5 +1,4 @@
 ; TODO
-; make run-dev work
 ; communicate with sente
 (defproject quantly "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
@@ -21,10 +20,8 @@
                   :scope "provided"]
                  ]
 
-  :plugins [[lein-cljsbuild "1.1.7"]]
-
   :min-lein-version "2.0.0"
-  :resource-paths ["config" "resources" "target/cljs-out"]
+  :resource-paths ["config" "resources"]
   :source-paths ["src/clj" "src/cljc" "src/cljs"]
 
   :clean-targets ^{:protect false}
@@ -39,9 +36,9 @@
   :cljsbuild
   {:builds [{:source-paths ["src/cljs" "src/cljc"]
              :compiler
-             {:output-to        "target/cljs-out/public/quantly-main.js"
-              :output-dir       "target/cljs-out/public/"
-              :source-map       "target/cljs-out/public/quantly-main.js.map"
+             {:output-to        "target/cljsbuild/public/cljs-out/quantly-main.js"
+              :output-dir       "target/cljsbuild/public/cljs-out/"
+              :source-map       "target/cljsbuild/public/cljs-out/quantly-main.js.map"
               :optimizations :advanced
               :pretty-print  false}}]}
 
@@ -49,8 +46,12 @@
 
   :profiles
   {:dev {:dependencies [[com.bhauman/figwheel-main "0.1.9"]
-                        [com.bhauman/rebel-readline-cljs "0.1.4"]]}
-   :uberjar {:prep-tasks ["compile" ["cljsbuild" "once"]]
+                        [com.bhauman/rebel-readline-cljs "0.1.4"]]
+         :resource-paths ["config" "resources" "target"]}
+   :uberjar {:resource-paths ["config" "resources" "target/cljsbuild"]
+             :prep-tasks ["compile" ["cljsbuild" "once"]]
              :env {:production true}
              :aot :all
-             :omit-source true}})
+             :omit-source true
+             :plugins [[lein-cljsbuild "1.1.7"]]
+             }})

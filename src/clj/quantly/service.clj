@@ -65,7 +65,7 @@
                     [:head [:meta {:charset "utf-8"}]]
                     [:body
                      [:div#app "hello"]
-                     [:script {:src "quantly-main.js"}]
+                     [:script {:src "cljs-out/quantly-main.js"}]
                      [:script "quantly.core.init();"]]])})))
 
 
@@ -88,4 +88,7 @@
      ::http/port 8080
      ::http/container-options {:h2c? true
                                :h2? false
-                               :ssl? false}}))
+                               :ssl? false}
+     ::http/secure-headers {:content-security-policy-settings
+                            {:object-src "none"}}
+     }))

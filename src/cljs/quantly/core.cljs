@@ -45,6 +45,6 @@
 (enable-console-print!)
 
 (defn ^:export init []
-  (println "yo ho ho"))
+  (println "tums"))
 
 (init)

@@ -2,10 +2,25 @@
   (:require [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]
             [io.pedestal.http.body-params :as body-params]
+            [io.pedestal.http.params :refer [keyword-params]]
             [datomic.api :as d]
             [clojure.pprint :refer [pprint]]
             [io.pedestal.interceptor.helpers :as h]
-            [hiccup.core :refer [html]]))
+            [hiccup.core :refer [html]]
+            [taoensso.sente :as sente]
+            [taoensso.sente.server-adapters.immutant :refer [get-sch-adapter]]
+            ))
+
+(let [{:keys [ch-recv send-fn connected-uids
+              ajax-post-fn ajax-get-or-ws-handshake-fn]}
+      (sente/make-channel-socket! (get-sch-adapter) {})]
+
+  (def ring-ajax-post                ajax-post-fn)
+  (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
+  (def ch-chsk                       ch-recv) ; ChannelSocket's receive channel
+  (def chsk-send!                    send-fn) ; ChannelSocket's send API fn
+  (def connected-uids                connected-uids) ; Watchable, read-only atom
+  )
 
 (def schema [{:db/ident              :message
               :db/valueType          :db.type/string
@@ -69,13 +84,27 @@
                      [:script "quantly.core.init();"]]])})))
 
 
+(def sente-get
+  (h/handler
+    ::sente-get
+    (fn [req]
+      (ring-ajax-get-or-ws-handshake req))))
+
+(def sente-post
+  (h/handler
+    ::sente-post
+    (fn [req]
+      (ring-ajax-post req))))
+
 (defn routes
   [conn]
   (route/expand-routes
     [[["/" {:get hello
             :patch [:set-hello ^:interceptors [set-hello] hello]}
-       ^:interceptors [(body-params/body-params) (insert-datomic conn) http/html-body]
        ["/main" {:get main}]
+       ["/chsk" {:get sente-get
+                 :post sente-post}]
+       ^:interceptors [(body-params/body-params) keyword-params (insert-datomic conn) http/html-body]
        ]]]))
 
 (defn service
@@ -84,7 +113,7 @@
     {:env :prod
      ::http/routes (routes conn)
      ::http/resource-path "/public"
-     ::http/type :jetty
+     ::http/type :immutant
      ::http/port 8080
      ::http/container-options {:h2c? true
                                :h2? false
